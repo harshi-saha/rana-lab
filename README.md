@@ -7,6 +7,6 @@ This includes:
 2. Bulk RNA-Seq scripts and tutorial
 3. scRNA-seq scripts and tutorial
 
-A link to the Rana Lab website is provided below:
+The Rana Lab website can be found [here](https://ranalab.ucsd.edu/)
 
-https://ranalab.ucsd.edu/
+
