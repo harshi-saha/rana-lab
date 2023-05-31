@@ -1,0 +1,49 @@
+# manual for each software is annotated in the .sh file
+# processes that do not fully utilize the given computational resources are put for parallel computing using `&`
+
+
+### quality check and renaming FASTQ files:
+
+# please keep the file names in the data repository unchanged, make deep copy of the data repository when you work on the data
+Parse_Filenames.ipynb: remove useless information, organize file names by grouping
+	- this requires case-by-case adjustment and your naming preference
+
+You can use this file or try to use shell script, asking chatgpt might be a good idea. The goal is to extract the unique part of the file that identifies it,
+for example, take 361_S49 from 361_S49_L001_R1_001.fastq.gz. Then adjust the scripts according to it.
+
+filename.txt: contains each of the file name, after renaming.
+
+mergefastq.sh: merge fastq's that belong to the same sample, but ran on different lanes (Optional)
+fastqc.sh: QC for raw and filtered fastq; run QC for raw first and decide what prefiltering should be done on the data
+
+
+
+
+### processing for read counts: (examples provided, read annotation on fastp.sh to understand the structure of the shell script)
+
+fastp.sh: prefiltering, take judgment on what parameters to be used for the particular data
+
+hisat2_alignment.sh: alignment to genome, output SAM files
+
+htseq_count.sh: readcounting, output CSV files
+	- when all counts are 0's: check if gtf file is in compatible format and column names correspond to that of the genome file
+	- for mice genome: use -i gene_name to return gene_name instead of ENSEMBL gene_id
+	- for human genome: use -i gene_id to return ENSEMBL gene_id, as lncRNA are not named
+
+
+# downstream analyses:
+(in progress) ENSEMBL_ID_to_Gene_Name.ipynb: transform CSV files with ENSEMBL gene_id indices into gene_name, annotate noncoding RNA (Optional)
+
+Count_Tally.ipynb: generate CSV files each containing just the two experimental group samples
+	- organize all downstream count files into `downstream_analysis` folder
+
+alternative: datacleaning.ipynb(Kaifu's version, dealing with 20MRepeat)
+
+DESeq2_example.R: an example of how DESeq2 is performed on the matrix containing just two experimental groups
+	- manual operation needed, noted in the R file
+
+Deseqmd.Rmd: more complete version in R markdown format
+
+Volcano_Plot.ipynb:
+	- tutorial: https://www.youtube.com/watch?v=-OqyN95h1V8&ab_channel=Sanbomics
+	- (in progress) sns plot can be drawn with layers of scatterplot, so your dot-of-interest can be pulled to the top layer, not overlayed by the others

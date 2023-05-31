@@ -1,0 +1,74 @@
+---
+title: "DESEQmd"
+output: html_document
+date: "2023-05-29"
+---
+
+```{r}
+setwd("/home/kaifuyang/Desktop/Ranalab/Server20MRepeat/expression")
+delim = read.delim("NTCmiR25.csv", sep=",") 
+rownames(delim) = delim$geneid
+delim=delim[,-1] 
+counts <- as.matrix(delim, row.names="geneid", header=TRUE)
+coldata = data.frame(sample=c("counts366_S53",	"counts367_S54",	"counts368_S55",	"counts369_S56",	"counts377_S59",	"counts378_S60",	"counts379_S61",	"counts380_S62"),
+                     condition=c(rep("NTC",4), rep("KO",4)),
+                     row.names="sample") 
+coldata$condition = as.factor(coldata$condition)
+head(counts) # look at what the table looks like
+
+# Load DESeq2 package
+library(DESeq2)
+
+# Load the raw counts, replicate information into DESeq2
+dds <- DESeqDataSetFromMatrix(countData = counts,
+                              colData = coldata,
+                              design = ~ condition)
+
+dds$condition <- relevel(dds$condition, ref = 'NTC')
+
+# Run DESeq2
+dds <- DESeq(dds)
+
+# Show results that include fold changes and p-values
+res <- results(dds)
+res.df <- as.data.frame(res)
+head(res.df)
+
+#output the txt file
+write.csv(res.df, file = "25_result.csv")
+```
+
+```{r}
+setwd("/home/kaifuyang/Desktop/Ranalab/Server20MRepeat/expression")
+delim = read.delim("miR106NTC.csv", sep=",") 
+rownames(delim) = delim$geneid
+delim=delim[,-1] 
+counts <- as.matrix(delim, row.names="geneid", header=TRUE)
+coldata = data.frame(sample=c("counts361_S49",	"counts362_S50",	"counts363_S51",	"counts364_S52",	"counts366_S53",	"counts367_S54",	"counts368_S55",	"counts369_S56"),
+                     condition=c(rep("KO",4), rep("NTC",4)),
+                     row.names="sample") 
+coldata$condition = as.factor(coldata$condition)
+head(counts) # look at what the table looks like
+
+# Load DESeq2 package
+library(DESeq2)
+
+# Load the raw counts, replicate information into DESeq2
+dds <- DESeqDataSetFromMatrix(countData = counts,
+                              colData = coldata,
+                              design = ~ condition)
+
+dds$condition <- relevel(dds$condition, ref = 'NTC')
+
+# Run DESeq2
+dds <- DESeq(dds)
+
+# Show results that include fold changes and p-values
+res <- results(dds)
+res.df <- as.data.frame(res)
+head(res.df)
+
+#output the txt file
+write.csv(res.df, file = "106_result.csv")
+```
+
