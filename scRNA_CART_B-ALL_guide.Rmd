@@ -6,7 +6,7 @@ date: "2023-07-13"
 
 
 Assume you have complete the cellranger step. 
-
+ps: another tutorial website I found helpful -> https://github.com/ktrns/scrnaseq/blob/master/scrnaseq.html
 ```{r}
 library(Seurat)
 library(dplyr)
