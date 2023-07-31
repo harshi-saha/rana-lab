@@ -1,0 +1,592 @@
+---
+title: "CART_B-ALL"
+output: html_document
+date: "2023-07-13"
+---
+
+
+Assume you have complete the cellranger step. 
+
+```{r}
+library(Seurat)
+library(dplyr)
+library(Matrix)
+library(ggplot2)
+library(sctransform)
+library(umap)
+library(SeuratObject)
+```
+
+## Read all data:
+```{r}
+setwd('/Volumes/T7_Shield/scRNA_rana/cellrangerresult')
+data_list <- c("CART1_output_old/outs/filtered_feature_bc_matrix",
+               "CART2_output_old/outs/filtered_feature_bc_matrix",
+               "CART3_output_old/outs/filtered_feature_bc_matrix",
+               "CART4_output_old/outs/filtered_feature_bc_matrix",
+               "CART5_output_old/outs/filtered_feature_bc_matrix",
+               "CART6_output_old/outs/filtered_feature_bc_matrix",
+               "CART7_output_old/outs/filtered_feature_bc_matrix",
+               "CART8_output_old/outs/filtered_feature_bc_matrix",
+               "CART9_output_old/outs/filtered_feature_bc_matrix",
+               "CART10_output_old/outs/filtered_feature_bc_matrix",
+               "CART11_output_old/outs/filtered_feature_bc_matrix",
+               "CART12_output_old/outs/filtered_feature_bc_matrix",
+               "CART13_output_old/outs/filtered_feature_bc_matrix",
+               "CART14_output_old/outs/filtered_feature_bc_matrix",
+               "CART-13-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-14-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-15-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-16-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-17-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-18-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-19-2_output_old/outs/filtered_feature_bc_matrix",
+               "CART-20-2_output_old/outs/filtered_feature_bc_matrix")
+
+sctransformed_objects = list()
+for (data_ind in 1:22) {
+  pbmc_data <- Read10X(data.dir = data_list[data_ind])
+  pbmc <- CreateSeuratObject(counts = pbmc_data)
+  pbmc <- PercentageFeatureSet(pbmc, pattern = "^MT-", col.name = "percent.mt")
+  pbmc <- SCTransform(pbmc, method = "glmGamPoi", vars.to.regress = "percent.mt", verbose = FALSE)
+  pbmc <- subset(pbmc, subset = percent.mt < 15 &
+                         nFeature_RNA > 200 &
+                         nFeature_RNA < 7500)
+  # perform data filtering
+  sctransformed_objects <- append(sctransformed_objects, pbmc)
+}
+
+# There are several checkpoints, comment those if u dont have space on computer
+# Also this takes some time
+# save.image("ALL_sctrans.image.RData")
+```
+
+## Assign variables
+```{r}
+# load("ALL_sctrans.image.RData")
+
+# names
+c1 <- sctransformed_objects[[1]]
+c2 <- sctransformed_objects[[2]]
+c3 <- sctransformed_objects[[3]]
+c4 <- sctransformed_objects[[4]]
+c5 <- sctransformed_objects[[5]]
+c6 <- sctransformed_objects[[6]]
+c7 <- sctransformed_objects[[7]]
+c8 <- sctransformed_objects[[8]]
+c9 <- sctransformed_objects[[9]]
+c10 <- sctransformed_objects[[10]]
+c11 <- sctransformed_objects[[11]]
+c12 <- sctransformed_objects[[12]]
+c13 <- sctransformed_objects[[13]]
+c14 <- sctransformed_objects[[14]]
+c13_2 <- sctransformed_objects[[15]]
+c14_2 <- sctransformed_objects[[16]]
+c15_2 <- sctransformed_objects[[17]]
+c16_2 <- sctransformed_objects[[18]]
+c17_2 <- sctransformed_objects[[19]]
+c18_2 <- sctransformed_objects[[20]]
+c19_2 <- sctransformed_objects[[21]]
+c20_2 <- sctransformed_objects[[22]]
+
+# sample name
+c1@meta.data$name<-"c1"
+c2@meta.data$name<-"c2"
+c3@meta.data$name<-"c3"
+c4@meta.data$name<-"c4"
+c5@meta.data$name<-"c5"
+c6@meta.data$name<-"c6"
+c7@meta.data$name<-"c7"
+c8@meta.data$name<-"c8"
+c9@meta.data$name<-"c9"
+c10@meta.data$name<-"c10"
+c11@meta.data$name<-"c11"
+c12@meta.data$name<-"c12"
+c13@meta.data$name<-"c13"
+c14@meta.data$name<-"c14"
+c13_2@meta.data$name<-"c13_2"
+c14_2@meta.data$name<-"c14_2"
+c15_2@meta.data$name<-"c15_2"
+c16_2@meta.data$name<-"c16_2"
+c17_2@meta.data$name<-"c17_2"
+c19_2@meta.data$name<-"c19_2"
+c20_2@meta.data$name<-"c20_2"
+
+# time / category
+c1@meta.data$day<-"Prior"
+c2@meta.data$day<-"Day_0"
+c3@meta.data$day<-"Day_15"
+c4@meta.data$day<-"Day_30"
+c5@meta.data$day<-"Day_30_bmmc"
+c6@meta.data$day<-"Day_180"
+c7@meta.data$day<-"Day_0"
+c8@meta.data$day<-"Day_15"
+c9@meta.data$day<-"Day_30"
+c10@meta.data$day<-"Day_30_bmmc"
+c11@meta.data$day<-"Day_60"
+c12@meta.data$day<-"Relapse"
+c13@meta.data$day<-"Relapse"
+c14@meta.data$day<-"Relapse"
+c13_2@meta.data$day<-"Day_60"
+c14_2@meta.data$day<-"Day_360"
+c15_2@meta.data$day<-"Day_360"
+c16_2@meta.data$day<-"Day_360"
+c17_2@meta.data$day<-"Relapse"
+c19_2@meta.data$day<-"Relapse"
+c20_2@meta.data$day<-"Relapse"
+
+# patient
+c1@meta.data$patient<-"001"
+c2@meta.data$patient<-"001"
+c3@meta.data$patient<-"001"
+c4@meta.data$patient<-"001"
+c5@meta.data$patient<-"001"
+c6@meta.data$patient<-"003"
+c7@meta.data$patient<-"002"
+c8@meta.data$patient<-"002"
+c9@meta.data$patient<-"002"
+c10@meta.data$patient<-"002"
+c11@meta.data$patient<-"002"
+c12@meta.data$patient<-"004"
+c13@meta.data$patient<-"004"
+c14@meta.data$patient<-"004"
+c13_2@meta.data$patient<-"001"
+c14_2@meta.data$patient<-"001"
+c15_2@meta.data$patient<-"002"
+c16_2@meta.data$patient<-"003"
+c17_2@meta.data$patient<-"008"
+c19_2@meta.data$patient<-"003"
+c20_2@meta.data$patient<-"001"
+
+```
+
+On further step on somewhere, you may encounter error indicates that memory limit is reach (if running on local machine), refer to this link: https://stackoverflow.com/questions/51295402/r-on-macos-error-vector-memory-exhausted-limit-reached
+
+
+
+```{r}
+# CART_I1.list <- c(c1,c2,c3,c4,c6,c8,c9,c11,c12,c13,c14,c13_2,c14_2,c15_2,c16_2,c17_2,c19_2,c20_2)
+CART_I1.list <- c(c1,c2,c3,c4,c6,c8,c9,c11,c12,c13_2,c14_2,c15_2,c16_2,c17_2,c19_2,c20_2)
+
+features <- SelectIntegrationFeatures(object.list = CART_I1.list)
+CART_I1.list <- lapply(X = CART_I1.list, FUN = function(x) {
+  x <- ScaleData(x, features = features, verbose = FALSE)
+  x <- RunPCA(x, features = features, verbose = FALSE)
+})
+CART_I1_1.anchors <- FindIntegrationAnchors(object.list = CART_I1.list, reference = c(4,7), reduction = "rpca", dims = 1:30)
+
+CART_I1_1.integrated <- IntegrateData(anchorset = CART_I1_1.anchors, dims = 1:30, k.weight=10)
+CART_I1_1.integrated <- ScaleData(CART_I1_1.integrated, verbose = FALSE)
+CART_I1_1.integrated <- RunPCA(CART_I1_1.integrated, verbose = FALSE)
+CART_I1_1.integrated <- RunUMAP(CART_I1_1.integrated, dims = 1:30)
+#setwd("/Volumes/T7_Shield/scRNA_rana/CART_B-BALL_tutorial")
+save(CART_I1_1.integrated, file = "July_29.CART_I1_1.integrated.RData")
+```
+
+
+
+```{r}
+#load("cellrangerresult/CART_I1_1.integrated.RData")
+plots <- DimPlot(CART_I1_1.integrated, group.by = c("patient", "day"), combine = FALSE, raster = FALSE)
+plots <- lapply(X = plots, FUN = function(x) x + 
+                  theme(legend.position = "top") + 
+                  guides(color = guide_legend(nrow = 3,byrow = TRUE, override.aes = list(size = 3))))
+CombinePlots(plots)
+DimPlot(CART_I1_1.integrated, group.by = "day", split.by = "patient", ncol = 3, raster = FALSE)
+```
+
+## Umap of filtered data without label
+```{r}
+DefaultAssay(CART_I1_1.integrated) <- "integrated"
+CART_I1_1 <- FindNeighbors(CART_I1_1.integrated, reduction = "pca", dims = 1:20)
+CART_I1_1 <- FindClusters(CART_I1_1, resolution = 0.5)
+DimPlot(CART_I1_1, reduction = "umap", label = TRUE, raster = FALSE)
+```
+## mark cell types based on given markers
+1. manually
+```{r}
+DefaultAssay(CART_I1_1) <- "RNA"
+markers.to.plot <- c("CD3E","CD4","IL7R","S100A4","CCR7","IL2RA","FOXP3", "CD8A","CCL5","GZMK","CD14", 
+                     "LYZ", "CD33","FCGR3A","MS4A7", "GNLY","GZMB", "NCAM1","NKG7", "CD79A","CD79B",
+                     "CD34","RPS14", "CD22","CD19","MME","PAX5", "MS4A1", "ITGAX", "CD1C", "IL3RA")
+
+Idents(CART_I1_1) <- factor(Idents(CART_I1_1), levels = c("0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16", "17","18", "19", "20", "21"))
+DotPlot(CART_I1_1, features = rev(markers.to.plot), dot.scale = 8,cols = c("grey", "red")) + RotatedAxis()
+
+# CART_I1_1 <- RenameIdents(CART_I1_1, `0` = "CD8 Effector", `1` = "CD14 Mono", `2` = "CD4 Naive",
+#                           `3` = "CD4 Naive", `4` = "NK", `5` = "CD16 Mono", `6` = "Unknown",
+#                           `7` = "CD8 Naive", `8` = "Unknown", `9` = "Unknown",
+#                           `10` = "Unknown", `11` = "CD8 Effector", `12` = "B-ALL", `13` = "B-ALL",
+#                           `14` = "Unknown",`15` = "CD8 Effector",`16` = "pDC",`17` = "B-ALL_D19-",
+#                           `18` = "B-ALL", `19` = "B-ALL",`20` = "B-ALL_D19-", `21` = "CD4 Memory", `22` = "Unknown", `23` = "Unknown")
+
+CART_I1_1 <- RenameIdents(CART_I1_1, `0` = "CD8 Effector", `1` = "CD4 Naive", `2` = "CD14 Mono",
+                          `3` = "CD4 Memory", `4` = "Unknown", `5` = "NK", `6` = "CD4 Naive",
+                          `7` = "CD16 Mono", `8` = "CD8 Naive", `9` = "Unknown",
+                          `10` = "CD14 Mono", `11` = "Unknown", `12` = "Unknown", `13` = "Unknown",
+                          `14` = "Unknown",`15` = "Unknown",`16` = "CD8 Effector",`17` = "pDC",
+                          `18` = "B-ALL", `19` = "B-ALL",`20` = "B-ALL", `21` = "CD4 Memory")
+
+DimPlot(CART_I1_1, reduction = "umap", label = TRUE,label.size = 4, raster = FALSE)
+DotPlot(CART_I1_1, features = rev(markers.to.plot), dot.scale = 6,cols = c("grey", "red")) + RotatedAxis()
+```
+
+2. automation by scType
+```{r}
+# setwd("/Volumes/T7_Shield/scRNA_rana/cellrangerresult")
+# load gene set preparation function
+source("/Volumes/T7_Shield/hui_lab/sc-type/R/gene_sets_prepare.R")
+# load cell type annotation function
+source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/sctype_score_.R")
+
+lapply(c("dplyr","Seurat","HGNChelper","openxlsx"), library, character.only = T)
+
+# DB file location, you may use the one given by github or customed one, we are using customed one
+db_ = "/Volumes/T7_Shield/scRNA_rana/gene_list_zhaoyang.xlsx"
+tissue = "Immune system" # e.g. Immune system,Pancreas,Liver,Eye,Kidney,Brain,Lung,Adrenal,Heart,Intestine,Muscle,Placenta,Spleen,Stomach,Thymus 
+
+
+gs_list_zy = gene_sets_prepare(db_, tissue)
+
+es.max = sctype_score(scRNAseqData = CART_I1_1.integrated[['integrated']]@scale.data, scaled = TRUE, 
+                      gs = gs_list_zy$gs_positive, gs2 = gs_list_zy$gs_negative) 
+
+# NOTE: scRNAseqData parameter should correspond to your input scRNA-seq matrix. 
+# In case Seurat is used, it is either pbmc[["RNA"]]@scale.data (default), pbmc[["SCT"]]@scale.data, in case sctransform is used for normalization,
+# or pbmc[["integrated"]]@scale.data, in case a joint analysis of multiple single-cell datasets is performed.
+
+# merge by cluster
+#CART_I1_1 <- FindNeighbors(CART_I1_1.filtered_integrated, reduction = "pca", dims = 1:20)
+#CART_I1_1 <- FindClusters(CART_I1_1, resolution = 0.5)
+cL_resutls = do.call("rbind", lapply(unique(CART_I1_1@meta.data$seurat_clusters), function(cl){
+    es.max.cl = sort(rowSums(es.max[ ,rownames(CART_I1_1@meta.data[CART_I1_1@meta.data$seurat_clusters==cl, ])]), decreasing = !0)
+    head(data.frame(cluster = cl, type = names(es.max.cl), scores = es.max.cl, ncells = sum(CART_I1_1@meta.data$seurat_clusters==cl)), 10)
+}))
+sctype_scores = cL_resutls %>% group_by(cluster) %>% top_n(n = 1, wt = scores)  
+
+# set low-confident (low ScType score) clusters to "unknown"
+sctype_scores$type[as.numeric(as.character(sctype_scores$scores)) < sctype_scores$ncells/4] = "Unknown" #sctype_scores$ncells/4
+print(sctype_scores[,1:3])
+```
+
+```{r}
+CART_I1_1@meta.data$automated_classif = ""
+for(j in unique(sctype_scores$cluster)){
+  cl_type = sctype_scores[sctype_scores$cluster==j,]; 
+  CART_I1_1@meta.data$automated_classif[CART_I1_1@meta.data$seurat_clusters == j] = as.character(cl_type$type[1])
+}
+
+options(repr.plot.width = 20, repr.plot.height = 20)  # Increase width and height as desired
+DimPlot(CART_I1_1, reduction = "umap", label = TRUE, repel = TRUE, group.by = 'automated_classif', raster = FALSE)  
+```
+
+```{r}
+# Subset your Seurat object to exclude 'Unknown' cells
+CART_I1_1_exclude_unk <- subset(CART_I1_1, subset = automated_classif != 'Unknown', invert = FALSE)
+
+# Create UMAP plot without 'Unknown' cells
+DimPlot(CART_I1_1_exclude_unk, reduction = "umap", label = TRUE, group.by = 'automated_classif', label.size = 4)
+```
+```{r}
+# Subset your Seurat object to exclude 'Unknown' cells
+CART_I1_1_own_exclude_unk <- subset(CART_I1_1, idents = c('B-ALL', 'CD14 Mono', 'CD4 Memory', 'CD4 Naive', 'CD8 Effector', 'CD16 Mono', 'NK', 'pDC'), invert = FALSE)
+
+# Create UMAP plot without 'Unknown' cells
+DimPlot(CART_I1_1_own_exclude_unk, reduction = "umap", label = TRUE, label.size = 4)
+```
+
+
+## Plot the relative percentage of each cell type
+R is so hard to use and the graph is ugly so I use python to plot the table
+```{r}
+library(tidyr)
+my_matrix = table(CART_I1_1@meta.data$automated_classif, CART_I1_1$name)
+
+# Convert the matrix to a data frame and reset row names
+my_data <- as.data.frame(my_matrix)
+
+# Pivot the data into a wider format
+wide_data <- my_data %>%
+  pivot_wider(names_from = Var2, values_from = Freq, values_fill = 0)
+
+wide_data <- wide_data %>%
+  rename(
+    `Categories` = Var1,
+    `Sample 1 - Day a15 (c3)` = c3,
+    `Sample 1 - Day b30 (c4)` = c4,
+    `Sample 1 - Day c60 (c13_2)` = c13_2,
+    `Sample 1 - Day d360 (c14_2)` = c14_2,
+    `Sample 2 - Day a15 (c8)` = c8,
+    `Sample 2 - Day b30 (c9)` = c9,
+    `Sample 2 - Day c60 (c11)` = c11,
+    `Sample 2 - Day d360 (c15_2)` = c15_2
+  )
+
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Data
+data = wide_data
+# Normalize data
+data_normalized <- data %>% 
+  mutate(across(-Categories, ~ (. / sum(.)) * 100))
+
+# Separate data into Sample 1 and Sample 2
+data_sample1 <- data_normalized %>%
+  select(Categories, starts_with('Sample 1'))
+
+data_sample2 <- data_normalized %>%
+  select(Categories, starts_with('Sample 2'))
+
+# Melt data for ggplot
+data_sample1_melted <- data_sample1 %>%
+  gather(key="Sample", value="Percentage", -Categories)
+
+data_sample2_melted <- data_sample2 %>%
+  gather(key="Sample", value="Percentage", -Categories)
+
+
+# Plot Sample 1
+ggplot(data_sample1_melted, aes(x=Categories, y=Percentage, fill=Sample)) +
+  geom_bar(stat='identity', position='dodge') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title='Patient 1-Relapse Bar Plot', x='Categories', y='Percentage of cells')
+
+# Plot Sample 2
+ggplot(data_sample2_melted, aes(x=Categories, y=Percentage, fill=Sample)) +
+  geom_bar(stat='identity', position='dodge') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title='Patient 2-Remission Bar Plot', x='Categories', y='Percentage of cells')
+
+```
+
+##look at CD14 Mono
+```{r}
+DefaultAssay(CART_I1_1) <- "RNA"
+CART_I1_1$celltype.patient <- paste(CART_I1_1$automated_classif, CART_I1_1$patient,CART_I1_1$name,CART_I1_1$day, sep = "_")
+CART_I1_1$celltype <- CART_I1_1$automated_classif
+
+Idents(CART_I1_1) <- "celltype.patient"
+Idents(CART_I1_1)
+DE_1 <- FindMarkers(CART_I1_1, ident.1 = "CD14 Mono_001_c14_2_Day_360", ident.2 ="CD14 Mono_002_c15_2_Day_360", verbose = FALSE)
+
+CART_I1_1_CD14_D360 <-subset(CART_I1_1, idents = c("CD14 Mono_001_c14_2_Day_360","CD14 Mono_002_c15_2_Day_360")) 
+CART_I1_1_CD14_D360<- ScaleData(object = CART_I1_1_CD14_D360,features = rownames(CART_I1_1_CD14_D360))
+CD14_D360.markersAll <- FindAllMarkers(CART_I1_1_CD14_D360, only.pos = TRUE)
+CD14_D360.markers <- CD14_D360.markersAll %>%
+                        filter(p_val_adj <= 0.05) %>%
+                        # filter(pct.1 >= 0.2) %>%
+                        # filter(pct.2 >= 0.2) %>%
+                        group_by(cluster) %>%
+                        top_n(n = 10, wt = avg_log2FC)
+c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2')
+CD14_D360.markers$gene
+DoHeatmap(CART_I1_1_CD14_D360, features = c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2'), size = 3, 
+          angle = 90) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+
+```
+
+```{r}
+DE_1
+```
+
+```{r}
+# load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# assuming df is your data frame
+df = DE_1
+# replace Inf values with NA
+df <- df %>% mutate(avg_log2FC = ifelse(avg_log2FC == Inf, NA, avg_log2FC))
+
+# calculate -log10 of the adjusted p-values
+df <- df %>% mutate(minus_log_pval_adj = -log10(p_val_adj))
+
+# create a new column for the color scheme based on avg_log2FC value
+df <- df %>% mutate(color = case_when(
+  avg_log2FC > 1 ~ "orange",
+  avg_log2FC < -1 ~ "blue",
+  TRUE ~ "grey"
+))
+
+# define the cutoffs for significance
+log2fc_cutoff_neg <- -50
+log2fc_cutoff_pos <- 50
+pval_cutoff <- -log10(0.05)
+
+# get the genes that are significant in terms of both p-value and log2 fold change
+top_genes <- df %>% filter(((avg_log2FC < log2fc_cutoff_neg | avg_log2FC > log2fc_cutoff_pos) & minus_log_pval_adj > pval_cutoff) | minus_log_pval_adj > 100)
+
+# volcano plot
+ggplot(df, aes(x = avg_log2FC, y = minus_log_pval_adj, color = color)) +
+  geom_point() +
+  scale_color_identity() +
+  geom_text(data = top_genes, aes(label = rownames(top_genes)), vjust = -1, hjust = 1, size = 3, check_overlap = TRUE) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Volcano plot", x = "Log2 Fold Change", y = "-Log10 Adjusted p-value", color = "")
+
+
+```
+
+## look at CD16 Mono
+```{r}
+DE_16 <- FindMarkers(CART_I1_1, ident.1 = "CD16 Mono_001_c14_2_Day_360", ident.2 ="CD16 Mono_002_c15_2_Day_360", verbose = FALSE)
+
+CART_I1_1_CD16_D360 <-subset(CART_I1_1, idents = c("CD16 Mono_001_c14_2_Day_360","CD16 Mono_002_c15_2_Day_360")) 
+CART_I1_1_CD16_D360<- ScaleData(object = CART_I1_1_CD16_D360,features = rownames(CART_I1_1_CD16_D360))
+CD16_D360.markersAll <- FindAllMarkers(CART_I1_1_CD16_D360, only.pos = TRUE)
+CD16_D360.markers <- CD16_D360.markersAll %>%                 
+                        filter(p_val_adj <= 0.05) %>%
+                        # filter(pct.1 >= 0.2) %>%
+                        # filter(pct.2 >= 0.2) %>%
+                        group_by(cluster) %>%
+                        top_n(n = 10, wt = avg_log2FC)
+
+CD16_D360.markers$gene
+c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1')
+DoHeatmap(CART_I1_1_CD16_D360, features = c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2'), size = 3, 
+          angle = 90) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
+```{r}
+# load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# assuming df is your data frame
+df = DE_16
+# replace Inf values with NA
+df <- df %>% mutate(avg_log2FC = ifelse(avg_log2FC == Inf, NA, avg_log2FC))
+
+# calculate -log10 of the adjusted p-values
+df <- df %>% mutate(minus_log_pval_adj = -log10(p_val_adj))
+
+# create a new column for the color scheme based on avg_log2FC value
+df <- df %>% mutate(color = case_when(
+  avg_log2FC > 1 ~ "orange",
+  avg_log2FC < -1 ~ "blue",
+  TRUE ~ "grey"
+))
+
+# define the cutoffs for significance
+log2fc_cutoff_neg <- -50
+log2fc_cutoff_pos <- 50
+pval_cutoff <- -log10(0.05)
+
+# get the genes that are significant in terms of both p-value and log2 fold change
+top_genes <- df %>% filter(((avg_log2FC < log2fc_cutoff_neg | avg_log2FC > log2fc_cutoff_pos) & minus_log_pval_adj > pval_cutoff) | minus_log_pval_adj > 100)
+
+selected_genes <- c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2')
+selected_rows <- df[rownames(df) %in% selected_genes,]
+
+# volcano plot
+ggplot(df, aes(x = avg_log2FC, y = minus_log_pval_adj, color = color)) +
+  geom_point() +
+  scale_color_identity() +
+  geom_text(data = selected_rows, aes(label = rownames(selected_rows)), vjust = -1, hjust = 1, size = 3, check_overlap = TRUE) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Volcano plot", x = "Log2 Fold Change", y = "-Log10 Adjusted p-value", color = "")
+
+```
+
+
+
+```{r}
+DE_16_day60 <- FindMarkers(CART_I1_1, ident.1 = "CD16 Mono_001_c13_2_Day_60", ident.2 ="CD16 Mono_002_c11_Day_60", verbose = FALSE)
+
+CART_I1_1_CD16_D60 <-subset(CART_I1_1, idents = c("CD16 Mono_001_c13_2_Day_60","CD16 Mono_002_c11_Day_60")) 
+CART_I1_1_CD16_D60<- ScaleData(object = CART_I1_1_CD16_D60,features = rownames(CART_I1_1_CD16_D60))
+CD16_D60.markersAll <- FindAllMarkers(CART_I1_1_CD16_D60, only.pos = TRUE)
+CD16_D60.markers <- CD16_D60.markersAll %>%                 
+                        filter(p_val_adj <= 0.05) %>%
+                        group_by(cluster) %>%
+                        top_n(n = 10, wt = avg_log2FC)
+
+
+
+new_order <- c("CD16 Mono_001_c13_2_Day_60","CD16 Mono_002_c11_Day_60")  # replace with the order you want
+CART_I1_1_CD16_D60 <- CART_I1_1_CD16_D60 %>% 
+  StashIdent() %>%
+  SetIdent(value = factor(Idents(object = .), levels = new_order))
+
+# c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1')
+# CD16_D60.markers$gene
+
+DoHeatmap(CART_I1_1_CD16_D60, features = c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2'), size = 3, 
+          angle = 90) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
+
+```{r}
+# load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# assuming df is your data frame
+df = DE_16_day60
+# replace Inf values with NA
+df <- df %>% mutate(avg_log2FC = ifelse(avg_log2FC == Inf, NA, avg_log2FC))
+
+# calculate -log10 of the adjusted p-values
+df <- df %>% mutate(minus_log_pval_adj = -log10(p_val_adj))
+
+# create a new column for the color scheme based on avg_log2FC value
+df <- df %>% mutate(color = case_when(
+  avg_log2FC > 1 ~ "orange",
+  avg_log2FC < -1 ~ "blue",
+  TRUE ~ "grey"
+))
+
+# define the cutoffs for significance
+log2fc_cutoff_neg <- -50
+log2fc_cutoff_pos <- 50
+pval_cutoff <- -log10(0.05)
+
+# get the genes that are significant in terms of both p-value and log2 fold change
+top_genes <- df %>% filter(((avg_log2FC < log2fc_cutoff_neg | avg_log2FC > log2fc_cutoff_pos) & minus_log_pval_adj > pval_cutoff) | minus_log_pval_adj > 100)
+
+selected_genes <- c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2')
+selected_rows <- df[rownames(df) %in% selected_genes,]
+
+# volcano plot
+ggplot(df, aes(x = avg_log2FC, y = minus_log_pval_adj, color = color)) +
+  geom_point() +
+  scale_color_identity() +
+  geom_text(data = selected_rows, aes(label = rownames(selected_rows)), vjust = -1, hjust = 1, size = 3, check_overlap = TRUE) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Volcano plot", x = "Log2 Fold Change", y = "-Log10 Adjusted p-value", color = "")
+
+```
+
+```{r}
+DE_14_day60 <- FindMarkers(CART_I1_1, ident.1 = "CD14 Mono_001_c13_2_Day_60", ident.2 ="CD14 Mono_002_c11_Day_60", verbose = FALSE)
+
+CART_I1_1_CD14_D60 <-subset(CART_I1_1, idents = c("CD14 Mono_001_c13_2_Day_60","CD14 Mono_002_c11_Day_60")) 
+CART_I1_1_CD14_D60<- ScaleData(object = CART_I1_1_CD14_D60,features = rownames(CART_I1_1_CD14_D60))
+CD14_D60.markersAll <- FindAllMarkers(CART_I1_1_CD14_D60, only.pos = TRUE)
+CD14_D60.markers <- CD16_D60.markersAll %>%                 
+                        filter(p_val_adj <= 0.05) %>%
+                        group_by(cluster) %>%
+                        top_n(n = 10, wt = avg_log2FC)
+
+
+
+new_order <- c("CD14 Mono_001_c13_2_Day_60","CD14 Mono_002_c11_Day_60")  # replace with the order you want
+CART_I1_1_CD14_D60 <- CART_I1_1_CD14_D60 %>% 
+  StashIdent() %>%
+  SetIdent(value = factor(Idents(object = .), levels = new_order))
+
+# c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1')
+# CD16_D60.markers$gene
+
+DoHeatmap(CART_I1_1_CD14_D60, features = c('NAP1L1', 'EEF1A1', 'RPL37A', 'CXCL8', 'RPS2', 'RPS24', 'MALAT1', 'RPD18', 'PFDN5', 'ACTB', 'RPS19', 'LST1', 'COTL1', 'NEAT1', "ISG15", "IFITM3", "APOBEC3A", 'IFIT2'), size = 3, 
+          angle = 90) + scale_fill_gradientn(colors = c("blue", "white", "red"))
+```
