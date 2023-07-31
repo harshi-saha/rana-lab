@@ -163,6 +163,25 @@ c20_2@meta.data$patient<-"001"
 On further step on somewhere, you may encounter error indicates that memory limit is reach (if running on local machine), refer to this link: https://stackoverflow.com/questions/51295402/r-on-macos-error-vector-memory-exhausted-limit-reached
 
 
+```{r}
+# double check if mt genes filtered
+pbmc@meta.data$percent.mt > 15 
+sctransformed_objects <- append(sctransformed_objects, pbmc)
+
+qc_filtered_objects = list()
+for (i in sctransformed_objects){
+  print(sum(i@meta.data$percent.mt >= 15 | i@meta.data$nFeature_RNA <= 200 | i@meta.data$nFeature_RNA >= 7500))
+  pbmc_qc_filtered = subset(i, subset = percent.mt < 15 & nFeature_RNA > 200 & nFeature_RNA < 7500)
+  print(sum(pbmc_qc_filtered@meta.data$percent.mt >= 15 | pbmc_qc_filtered@meta.data$nFeature_RNA <= 200 | pbmc_qc_filtered@meta.data$nFeature_RNA >= 7500))
+  qc_filtered_objects <- append(qc_filtered_objects, pbmc_qc_filtered)
+}
+
+sctransformed_objects <- list()
+for (i in qc_filtered_objects){
+  print(sum(i@meta.data$percent.mt >= 15 | i@meta.data$nFeature_RNA <= 200 | i@meta.data$nFeature_RNA >= 7500))
+  sctransformed_objects <-  append(sctransformed_objects, i)
+}
+```
 
 ```{r}
 # CART_I1.list <- c(c1,c2,c3,c4,c6,c8,c9,c11,c12,c13,c14,c13_2,c14_2,c15_2,c16_2,c17_2,c19_2,c20_2)
