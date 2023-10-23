@@ -225,9 +225,9 @@ DimPlot(CART_I1_1, reduction = "umap", label = TRUE, raster = FALSE)
 1. manually
 ```{r}
 DefaultAssay(CART_I1_1) <- "RNA"
-markers.to.plot <- c("CD3E","CD4","IL7R","S100A4","CCR7","IL2RA","FOXP3", "CD8A","CCL5","GZMK","CD14", 
-                     "LYZ", "CD33","FCGR3A","MS4A7", "GNLY","GZMB", "NCAM1","NKG7", "CD79A","CD79B",
-                     "CD34","RPS14", "CD22","CD19","MME","PAX5", "MS4A1", "ITGAX", "CD1C", "IL3RA")
+markers.to.plot <- c("Cd3e","Cd4","Il7r","S100a4","Ccr7","Il2ra","Foxp3", "Cd8a","Ccl5","Gzmk","Cd14", 
+                     "Lyz", "Cd33","Fcgr3a","Ms4a7", "Gnly","Gzmb", "Ncam1","Nkg7", "Cd79a","Cd79b",
+                     "Cd34","Rps14", "Cd22","Cd19","Mme","Pax5", "Ms4a1", "Itgax", "Cd1c", "Il3ra")
 
 Idents(CART_I1_1) <- factor(Idents(CART_I1_1), levels = c("0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16", "17","18", "19", "20", "21"))
 DotPlot(CART_I1_1, features = rev(markers.to.plot), dot.scale = 8,cols = c("grey", "red")) + RotatedAxis()
